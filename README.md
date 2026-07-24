@@ -8,25 +8,25 @@ Finviz 스타일 트리맵 — 네모 크기 = 시가총액, 색 = 수익률(빨
 ```powershell
 git clone https://github.com/minsuquant-cloud/market_heatmap.git
 cd market_heatmap
-pip install -r requirements.txt
+py -3.12 -m venv .venv                          # 레포별 가상환경
+.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 ## 실행
 
 ```powershell
 # 방법 1 — 그냥 켠다 (첫 실행만 데이터 수집으로 2~3분, 이후 몇 초)
-streamlit run heatmap_app.py
+.venv\Scripts\python.exe -m streamlit run heatmap_app.py
 
 # 방법 2 — 데이터를 미리 받아두고 켠다 (앱이 즉시 뜸)
-python collect_meta.py            # 나스닥 100
-python collect_meta.py --all      # S&P 500까지
-streamlit run heatmap_app.py
+.venv\Scripts\python.exe collect_meta.py            # 나스닥 100
+.venv\Scripts\python.exe collect_meta.py --all      # S&P 500까지
+.venv\Scripts\python.exe -m streamlit run heatmap_app.py
 ```
 
 → 브라우저에서 http://localhost:8501
 
-> 이 컴퓨터(works2 콘다 환경)에서는:
-> `& "C:\Users\minsu\.conda\envs\works2\python.exe" -m streamlit run heatmap_app.py`
+> 가상환경을 활성화(`.venv\Scripts\activate`)했다면 `python`·`streamlit`을 그대로 써도 된다.
 
 ## 화면 사용법
 
