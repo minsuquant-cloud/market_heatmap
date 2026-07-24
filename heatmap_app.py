@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import time
 from pathlib import Path
 
 import numpy as np
@@ -107,6 +108,7 @@ def load_meta(universe: str, tickers: list[str], force: bool = False) -> pd.Data
             })
         except Exception:
             failed.append(t)
+        time.sleep(0.25)   # Yahoo rate limit 완화 (없으면 뒷부분 연쇄 실패)
         prog.progress((i + 1) / len(tickers),
                       text=f"섹터·시가총액 수집 {i+1}/{len(tickers)}")
     prog.empty()
@@ -175,6 +177,11 @@ df = df.dropna(subset=["chg", "mcap"])
 if n_no_ret or n_no_cap:
     st.caption(f":material/warning: 제외 — 수익률 미수신 {n_no_ret}건 · 시가총액 미상 {n_no_cap}건 "
                f"(표시 {len(df)}/{len(meta)}종목)")
+
+if df.empty:
+    st.warning("표시할 종목이 없습니다 — 수익률·시가총액을 받은 종목이 하나도 없습니다. "
+               "잠시 후 다시 시도하세요.")
+    st.stop()
 
 df["label"] = df["ticker"]
 df["chg_txt"] = df["chg"].map(lambda v: f"{v:+.2f}%")

@@ -78,6 +78,7 @@ def collect(key: str) -> None:
             })
         except Exception:
             failed.append(t)
+        time.sleep(0.25)   # Yahoo rate limit 완화 — 없으면 뒷부분이 통째로 실패하기 쉽다
         # 진행 표시 (같은 줄 덮어쓰기)
         el = time.time() - t0
         eta = el / i * (len(tickers) - i)
