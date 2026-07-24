@@ -31,6 +31,7 @@ st.set_page_config(page_title="시장 히트맵", page_icon="🗺️", layout="w
 RESULTS = Path(__file__).parent / "results"
 RESULTS.mkdir(exist_ok=True)
 META_MAX_AGE_DAYS = 7          # 섹터·시총 캐시 유효기간
+META_MIN_COVERAGE = 0.95       # 캐시가 이 비율 이상 덮으면 재사용 (영구 실패 종목 허용)
 
 UNIVERSES = {
     "나스닥 100": {
@@ -68,9 +69,14 @@ def fetch_tickers(universe: str) -> list[str]:
                     ticks = (t[col].astype(str).str.strip()
                              .str.replace(".", "-", regex=False))  # BRK.B → BRK-B
                     return sorted(ticks.unique().tolist())
-    except Exception:
-        pass
+    except Exception as e:
+        fail_reason = str(e)
+    else:
+        fail_reason = "구성종목 표를 찾지 못함"
     if cfg["cache"].exists():                      # 폴백: 캐시에 있던 티커
+        # 폴백을 조용히 넘기지 않는다 — 낡은 목록을 쓰고 있음을 알린다
+        st.warning(f"위키피디아에서 구성종목을 받지 못해 **캐시의 옛 목록**을 사용합니다 "
+                   f"(사유: {fail_reason}). 편입·편출이 반영되지 않았을 수 있습니다.")
         return pd.read_csv(cfg["cache"])["ticker"].tolist()
     return []
 
@@ -81,7 +87,10 @@ def load_meta(universe: str, tickers: list[str], force: bool = False) -> pd.Data
     if cache.exists() and not force:
         age = dt.date.today() - dt.date.fromtimestamp(cache.stat().st_mtime)
         meta = pd.read_csv(cache)
-        if age.days <= META_MAX_AGE_DAYS and set(tickers) <= set(meta["ticker"]):
+        # 전량 일치(부분집합)를 요구하면 영구 실패 종목이 하나만 있어도 캐시를
+        # 영영 못 쓰고 매 실행 2~3분씩 재수집한다 → 커버리지 기준으로 완화
+        covered = len(set(tickers) & set(meta["ticker"])) / max(len(tickers), 1)
+        if age.days <= META_MAX_AGE_DAYS and covered >= META_MIN_COVERAGE:
             return meta
 
     rows, failed = [], []
@@ -148,6 +157,12 @@ if not tickers:
     st.stop()
 
 meta = load_meta(universe, tickers, force=force)
+if meta.empty:
+    st.error("섹터·시가총액을 한 종목도 받지 못했습니다 (yfinance 접속 실패로 보임). "
+             "잠시 후 다시 시도하거나, 터미널에서 `python collect_meta.py`로 먼저 "
+             "수집해 보세요.")
+    st.stop()
+
 rets = fetch_returns(tuple(sorted(meta["ticker"])), period)
 
 df = meta.merge(rets.rename("chg").reset_index()

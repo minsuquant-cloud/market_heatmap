@@ -87,8 +87,13 @@ def collect(key: str) -> None:
 
     meta = pd.DataFrame(rows)
     n_no_cap = int(meta["mcap"].isna().sum()) if len(meta) else 0
-    meta.to_csv(cfg["cache"], index=False)
-    print(f"저장: {cfg['cache']}  ({len(meta)}종목)")
+    # 수집이 전멸했을 때 빈 파일로 기존 캐시를 덮어쓰지 않는다
+    # (네트워크 장애 한 번에 애써 모은 메타가 날아가던 문제)
+    if len(meta):
+        meta.to_csv(cfg["cache"], index=False)
+        print(f"저장: {cfg['cache']}  ({len(meta)}종목)")
+    else:
+        print(f"✖ 수집 결과 0종목 — 기존 캐시를 보존하고 저장하지 않음: {cfg['cache']}")
     # 실패를 조용히 넘기지 않는다
     if failed:
         print(f"⚠ 수집 실패 {len(failed)}종목: {', '.join(failed[:10])}"
