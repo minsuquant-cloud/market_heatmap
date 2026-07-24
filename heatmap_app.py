@@ -166,9 +166,10 @@ df["chg_txt"] = df["chg"].map(lambda v: f"{v:+.2f}%")
 
 # px.Constant("전체")를 루트로 넣으면 상단 경로줄에 '전체' 버튼이 항상 떠 있어
 # 어디로 확대해 들어갔든 한 번 클릭으로 처음 화면에 돌아온다.
-path = ([px.Constant("🏠 전체"), "sector", "industry", "label"]
+# 이모지(🏠)는 plotly 트리맵 경로줄에서 글자가 깨져 나와 쓰지 않는다.
+path = ([px.Constant("전체"), "sector", "industry", "label"]
         if depth.startswith("섹터 > 산업")
-        else [px.Constant("🏠 전체"), "sector", "label"])
+        else [px.Constant("전체"), "sector", "label"])
 
 # Finviz 풍 색: -3% 빨강 ~ 0 진회색 ~ +3% 초록 (기간이 길면 스케일 자동 확대)
 span = max(3.0, float(np.nanpercentile(np.abs(df["chg"]), 90)))
@@ -192,7 +193,7 @@ fig.update_traces(
 fig.update_layout(margin=dict(t=44, l=0, r=0, b=0),
                   coloraxis_colorbar=dict(title="%"))
 st.plotly_chart(fig, use_container_width=True)
-st.caption("확대: 네모 클릭 · **축소: 맨 위 경로줄에서 「🏠 전체」(처음으로) 또는 상위 이름 클릭** · "
+st.caption("확대: 네모 클릭 · **축소: 맨 위 경로줄에서 「전체」(처음으로) 또는 상위 이름 클릭** · "
            "한 단계씩 돌아가려면 경로줄의 바로 왼쪽 항목을 누르면 된다")
 
 # 요약 통계 — 그림이 주는 인상을 숫자로 검증할 수 있게
