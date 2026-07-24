@@ -1,2 +1,3 @@
 __pycache__/
 results/heatmap_meta_*.csv
+.venv/
