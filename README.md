@@ -8,9 +8,14 @@ Finviz 스타일 트리맵 — 네모 크기 = 시가총액, 색 = 수익률(빨
 ```powershell
 git clone https://github.com/minsuquant-cloud/market_heatmap.git
 cd market_heatmap
-py -3.12 -m venv .venv                          # 레포별 가상환경
+py -3.12 -m venv .venv                          # 레포별 가상환경 (Python 3.12 권장)
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
+
+> `py -3.12`가 없다는 오류가 나면 그 PC의 3.12 실행파일 전체 경로로 만들면 된다.
+> 예) uv로 3.12를 설치한 경우:
+> `& "$env:APPDATA\uv\python\cpython-3.12.13-windows-x86_64-none\python.exe" -m venv .venv`
+> (설치된 3.12 경로는 `py -0p` 또는 `uv python list`로 확인)
 
 ## 실행
 
